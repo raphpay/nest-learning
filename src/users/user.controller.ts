@@ -7,7 +7,9 @@ import {
   Patch,
   Post,
   Req,
+  UseGuards,
 } from '@nestjs/common';
+import { APiKeyGuard } from 'src/common/guards/a-pi-key.guard';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UUIDValidatorPipe } from './pipes/uuid-validator.pipe';
@@ -30,6 +32,12 @@ export class UserController {
   @Get('by-id/:id')
   findOne(@Param('id', UUIDValidatorPipe) id: string) {
     return this.userService.findOne(id);
+  }
+
+  @UseGuards(APiKeyGuard)
+  @Get('secure')
+  getSecureData() {
+    return { message: 'Access granted' };
   }
 
   @Patch(':id')
