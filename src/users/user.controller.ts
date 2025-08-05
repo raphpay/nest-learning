@@ -6,9 +6,11 @@ import {
   Param,
   Patch,
   Post,
+  Req,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UUIDValidatorPipe } from './pipes/uuid-validator.pipe';
 import { UserService } from './user.service';
 
 @Controller('users')
@@ -25,18 +27,23 @@ export class UserController {
     return this.userService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+  @Get('by-id/:id')
+  findOne(@Param('id', UUIDValidatorPipe) id: string) {
+    return this.userService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+  update(
+    @Param('id') id: string,
+    @Body() body: UpdateUserDto,
+    @Req() req: Request,
+  ) {
+    console.log('raw body:', req.body);
+    return this.userService.update(id, body);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+    return this.userService.remove(id);
   }
 }
