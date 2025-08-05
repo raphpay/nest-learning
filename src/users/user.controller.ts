@@ -34,6 +34,11 @@ export class UserController {
     return this.userService.findOne(id);
   }
 
+  @Get('bike/:id')
+  findBike(@Param('id', UUIDValidatorPipe) id: string) {
+    return this.userService.findBike(id);
+  }
+
   @UseGuards(APiKeyGuard)
   @Get('secure')
   getSecureData() {

@@ -1,49 +1,64 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { v4 as uuidV4 } from 'uuid';
-import { CreateUserDto, User } from './dto/create-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { User } from './user.entity';
 
 @Injectable()
 export class UserService {
-  private users: User[] = [];
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
+  ) {}
 
-  create(createUserDto: CreateUserDto) {
-    const user: User = {
-      id: uuidV4(),
+  async create(createUserDto: CreateUserDto) {
+    const user = this.userRepo.create({
+      id: uuidV4(), // ou laisse TypeORM gérer l'id
       ...createUserDto,
-    };
-    this.users.push(user);
-    return user;
-  }
-
-  findAll() {
-    return this.users;
-  }
-
-  findOne(id: string) {
-    const user = this.users.find((u) => u.id === id);
-    if (!user) throw new NotFoundException(`User with id ${id} not found`);
-    return user;
-  }
-
-  update(id: string, updateUserDto: UpdateUserDto) {
-    const user = this.findOne(id);
-    if (!user) return null;
-    console.log('user1', user);
-    console.log('userdto', updateUserDto);
-    // Object.assign(user, updateUserDto);
-    Object.entries(updateUserDto).forEach(([key, value]) => {
-      if (value !== undefined) {
-        user[key] = value;
-      }
     });
-    console.log('user2', user);
+
+    return this.userRepo.save(user);
+  }
+
+  async findAll() {
+    return this.userRepo.find({ relations: ['bike'] });
+  }
+
+  async findOne(id: string) {
+    const user = await this.userRepo.findOne({
+      where: { id },
+      relations: ['bike'],
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+
     return user;
   }
 
-  remove(id: string) {
-    const index = this.users.findIndex((u) => u.id === id);
-    if (index === -1) return null;
-    this.users.splice(index, 1)[0];
+  async findBike(id: string) {
+    const user = await this.findOne(id);
+
+    if (!user.bike) {
+      throw new NotFoundException(`User with id ${id} doesn't have a bike`);
+    }
+
+    return user.bike;
+  }
+
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const user = await this.findOne(id);
+
+    Object.assign(user, updateUserDto);
+
+    return this.userRepo.save(user);
+  }
+
+  async remove(id: string) {
+    const user = await this.findOne(id);
+    return this.userRepo.remove(user);
   }
 }

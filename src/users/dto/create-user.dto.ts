@@ -7,9 +7,3 @@ export class CreateUserDto {
   @IsEmail()
   email: string;
 }
-
-export class User {
-  id: string;
-  name: string;
-  email: string;
-}
