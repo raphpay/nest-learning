@@ -9,7 +9,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { APiKeyGuard } from 'src/common/guards/a-pi-key.guard';
+import { APiKeyGuard } from 'src/common/guards/api-key.guard';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UUIDValidatorPipe } from './pipes/uuid-validator.pipe';
